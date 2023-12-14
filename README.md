@@ -44,6 +44,9 @@ You can then download the dataset and our reported best models with our download
 python dataset/densely_captioned_images/dataset/scripts/download.py 
 ```
 
+Or download them manually at the following urls.
+https://github.com/facebookresearch/DCI/blob/3d95af66c918f0cc24f115c5eeb0d2f66be30872/dataset/densely_captioned_images/dataset/scripts/download.py#L16-L29
+
 ### Data
 
 #### CLIP-ready
