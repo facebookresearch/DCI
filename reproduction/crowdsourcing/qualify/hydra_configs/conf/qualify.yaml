@@ -1,0 +1,20 @@
+#@package _global_
+defaults:
+  - /mephisto/blueprint: static_react_task
+  - /mephisto/architect: local
+  - /mephisto/provider: mock
+
+mephisto:
+  blueprint:
+    task_source: ${task_dir}/webapp/build/bundle.js
+    link_task_source: false
+    extra_source_dir: ${task_dir}/webapp/src/static
+    units_per_assignment: 1
+  task:
+    task_name: long-caps-qualifications-live
+    task_title: "Highly Detailed Image Captioning : Closed-Qual Test [one per person][~5m]"
+    task_description: "We're collecting high-quality image annotations with in-depth descriptions with the goal of capturing the complete visual information as text. This task is a first round qualification test."
+    task_reward: -1
+    task_tags: "descriptive,images,annotating,captions,test"
+    max_num_concurrent_units: 100
+    maximum_units_per_worker: 1

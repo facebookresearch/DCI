@@ -1,0 +1,12 @@
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl
+nltk==3.8.1
+numpy==1.24.2
+peft==0.4.0
+Pillow==10.0.1
+spacy==3.6.1
+spacy-legacy==3.0.12
+spacy-loggers==1.0.4
+transformers>=4.31.0
+tqdm>=4.65.0
+torch>=2.0.0
+torchvision>=0.15.1

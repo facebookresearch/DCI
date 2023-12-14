@@ -1,0 +1,28 @@
+#@package _global_
+defaults:
+  - /mephisto/blueprint: static_react_task
+  - /mephisto/provider: mturk
+mephisto:
+  blueprint:
+    task_source: ${task_dir}/webapp/build/bundle.js
+    task_source_review: ${task_dir}/webapp/build/bundle.review.js
+    link_task_source: false
+    extra_source_dir: ${task_dir}/webapp/src/static
+    # NOTE pick something based on your task
+    block_qualification: long-caps-review
+    units_per_assignment: 1
+  task:
+    allowed_concurrent: 0
+    task_name: long-caps-pilot-live
+    task_title: "Highly Detailed Image Captioning [last ~300][~40m per]"
+    task_description: "You will be shown an image, with the goal of writing a ~600-800 word description about everything contained inside. This task is long, and should be completed in a single pass."
+    task_reward: -1
+    task_tags: "image,annotation,captioning,text,long"
+    max_num_concurrent_units: 80
+    no_submission_patience: 432000
+    assignment_duration_in_seconds: 7200
+
+num_tasks: 259
+idx_start: 9500
+idx_end: 9780
+is_pilot: false

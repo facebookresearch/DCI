@@ -1,0 +1,138 @@
+diff --git a/corpus.json b/corpus.json
+index 559add2..a610609 100644
+--- a/corpus.json
++++ b/corpus.json
+@@ -62,4 +62,4 @@
+     "spatial":{
+         "vg":["Relation_spatial_vg"]
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/setup.py b/setup.py
+index b0862d3..072cbeb 100644
+--- a/setup.py
++++ b/setup.py
+@@ -23,7 +23,7 @@ setuptools.setup(
+     ],
+     install_requires = [
+         "tqdm",
+-        "pyyaml"
++        "pyyaml",
+         "Pillow==9.0.0"
+     ]
+ )
+diff --git a/vl_checklist/data_loader.py b/vl_checklist/data_loader.py
+index 4365caa..c220989 100644
+--- a/vl_checklist/data_loader.py
++++ b/vl_checklist/data_loader.py
+@@ -2,11 +2,12 @@ import yaml
+ import os
+ import json
+ 
++from densely_captioned_images.repro.config import EVAL_DATASET_PATH, VLC_ROOT_PATH
+ 
+ class DataLoader(object):
+     def __init__(self, corpus_names, type ,task='itm', version="v1") -> None:
+         self.root_dir = os.path.dirname(os.path.realpath(__file__))#.replace("/vl_checklist", "")
+-        self.cur_dir = os.path.realpath(os.curdir)
++        self.cur_dir = VLC_ROOT_PATH
+ 
+         self.version = version
+         if task == 'itm':
+@@ -14,17 +15,15 @@ class DataLoader(object):
+         elif task == 'itc':
+             self.data = self.load_itc_samples(corpus_names,type)
+ 
+-
+     def load_pos_and_neg_samples(self, corpus_names: list,type):
+         corpus = {}
+         for corpus_name in corpus_names:
+             corpus[corpus_name] = []
+             config = yaml.load(open(os.path.join(self.cur_dir, 'corpus',  self.version, type, f'{corpus_name}.yaml'), 'r'), Loader=yaml.FullLoader)
+-            print(config["ANNO_PATH"])
+-            m = json.load(open(config["ANNO_PATH"]))
++            m = json.load(open(os.path.join(self.cur_dir, config["ANNO_PATH"])))
+             for x in m:
+                 path, texts_dict = x
+-                path = os.path.join(config["IMG_ROOT"], path)
++                path = os.path.join(EVAL_DATASET_PATH, config["IMG_ROOT"], path)
+                 if os.path.exists(path):
+                     corpus[corpus_name].append({
+                         "path": path,
+@@ -46,15 +45,13 @@ class DataLoader(object):
+             m = json.load(open(os.path.join(self.cur_dir,config["ANNO_PATH"])))
+             for x in m:
+                 path, texts_dict = x
+-                path = os.path.join(config["IMG_ROOT"], path)
++                path = os.path.join(EVAL_DATASET_PATH, config["IMG_ROOT"], path)
+                 if os.path.exists(path):
+                     corpus[corpus_name].append({
+                         "path": path,
+                         "texts_pos": texts_dict["POS"],
+                         "texts_neg": texts_dict["NEG"]
+                     })
+-                # else:
+-                #     print(path)
+         return corpus
+                 
+ 
+diff --git a/vl_checklist/evaluate.py b/vl_checklist/evaluate.py
+index d38d592..7ac432b 100644
+--- a/vl_checklist/evaluate.py
++++ b/vl_checklist/evaluate.py
+@@ -7,6 +7,27 @@ import random
+ import time
+ import json
+ 
++import numpy as np
++from datetime import date, datetime, timedelta
++
++class NpEncoder(json.JSONEncoder):
++    def default(self, obj):
++        if isinstance(obj, np.bool_):
++            return bool(obj)
++        if isinstance(obj, (np.floating, np.complexfloating)):
++            return float(obj)
++        if isinstance(obj, np.integer):
++            return int(obj)
++        if isinstance(obj, np.ndarray):
++            return obj.tolist()
++        if isinstance(obj, np.string_):
++            return str(obj)
++        if isinstance(obj, (datetime, date)):
++            return obj.isoformat()
++        if isinstance(obj, timedelta):
++            return str(obj)
++        return super(NpEncoder, self).default(obj)
++
+ 
+ class Evaluate(object):
+     def __init__(self, config_file, model) -> None:    
+@@ -83,7 +104,7 @@ class Evaluate(object):
+                 if not os.path.exists(sample_path):
+                     os.makedirs(sample_path)
+                 with open(os.path.join(self.cur_dir, self.dir,'itm',f'{file_name}_{name}.json'),'w',encoding='utf-8') as f:
+-                    json.dump({"sample_correct_outputs":sample_t,"sample_incorrect_outputs":sample_f,"total_acc":round(accuracy, 4),"number_of_data":len(d.data[name]),"model_name":self.model_name,"task":self.task,"eval_time":endtime - starttime},f)
++                    json.dump({"sample_correct_outputs":sample_t,"sample_incorrect_outputs":sample_f,"total_acc":round(accuracy, 4),"number_of_data":len(d.data[name]),"model_name":self.model_name,"task":self.task,"eval_time":endtime - starttime},f, cls=NpEncoder)
+                 
+                 for n,i in enumerate(zip(sample_t,sample_f)):
+                     add_caption(i[0]["img_path"],'text:'+i[0]["text"],'score:'+str(i[0]["score"]),None,None,sample_path,f'cor-{n+1}')
+@@ -124,14 +145,14 @@ class Evaluate(object):
+                 accuracy = float(num_t) / (num_t + num_f)
+                 results[name] = f'acc: {round(accuracy, 4)}'
+                 file_name = data_type.replace("/","_")
+-                sample_t = random.sample(sample_true,self.sample_num)
+-                sample_f = random.sample(sample_false,self.sample_num)
++                sample_t = random.sample(sample_true,min(self.sample_num,len(sample_true)))
++                sample_f = random.sample(sample_false,min(self.sample_num,len(sample_false)))
+ 
+                 sample_path = os.path.join(self.cur_dir, self.dir,'itc',"sample",f'{file_name}_{name}')
+                 if not os.path.exists(sample_path):
+                     os.makedirs(sample_path)
+                 with open(os.path.join(self.cur_dir, self.dir,'itc',f'{file_name}_{name}.json'),'w',encoding='utf-8') as f:
+-                    json.dump({"sample_correct_outputs":sample_t,"sample_incorrect_outputs":sample_f,"total_acc":round(accuracy, 4),"number_of_data":len(d.data[name]),"model_name":self.model_name,"task":self.task,"eval_time":endtime - starttime},f)
++                    json.dump({"sample_correct_outputs":sample_t,"sample_incorrect_outputs":sample_f,"total_acc":round(accuracy, 4),"number_of_data":len(d.data[name]),"model_name":self.model_name,"task":self.task,"eval_time":endtime - starttime},f, cls=NpEncoder)
+                 
+                 for n,i in enumerate(zip(sample_t,sample_f)):
+                     add_caption(i[0]["img_path"],'pos_text:'+i[0]["pos_txt"],'pos_score:'+str(i[0]["pos_score"]),'neg_text:'+i[0]["neg_txt"],'neg_score:'+str(i[0]["neg_score"]),sample_path,f'cor-{n+1}')

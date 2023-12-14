@@ -1,0 +1,208 @@
+diff --git a/vision_benchmark/commands/linear_probe.py b/vision_benchmark/commands/linear_probe.py
+index aa24352..d6415a2 100644
+--- a/vision_benchmark/commands/linear_probe.py
++++ b/vision_benchmark/commands/linear_probe.py
+@@ -109,6 +109,7 @@ def main():
+         results_dict = {
+             'model_name': config.MODEL.NAME,
+             'dataset_name': config.DATASET.DATASET,
++            'best_acc': best_acc,
+             'num_trainable_params': model_info.get('n_trainable_params', None),
+             'num_params': model_info.get('n_params', None),
+             'num_visual_params': model_info.get('n_visual_params', None),
+diff --git a/vision_benchmark/commands/zeroshot.py b/vision_benchmark/commands/zeroshot.py
+index d1377e1..4c9fef5 100644
+--- a/vision_benchmark/commands/zeroshot.py
++++ b/vision_benchmark/commands/zeroshot.py
+@@ -112,6 +112,7 @@ def main():
+ 
+         results_dict = {
+             'model_name': f'CLIP-{config.MODEL.NAME}',
++            'best_acc': result,
+             'dataset_name': config.DATASET.DATASET,
+             'num_trainable_params': 0,
+             'num_params': config.MODEL.STATS.get('n_params', None),
+diff --git a/vision_benchmark/config/default.py b/vision_benchmark/config/default.py
+index c70ddb8..3a06c58 100644
+--- a/vision_benchmark/config/default.py
++++ b/vision_benchmark/config/default.py
+@@ -159,7 +159,9 @@ _C.TRAIN.GAMMA1 = 0.99
+ _C.TRAIN.GAMMA2 = 0.0
+ 
+ _C.TRAIN.BEGIN_EPOCH = 0
+-_C.TRAIN.END_EPOCH = 100
++_C.TRAIN.END_EPOCH = 50
++_C.TRAIN.SWEEP_BEGIN_EPOCH = 0
++_C.TRAIN.SWEEP_END_EPOCH = 10
+ _C.TRAIN.EXTRA_FINAL_TRAIN_EPOCH = 0
+ 
+ _C.TRAIN.IMAGE_SIZE = [224, 224]  # width * height, ex: 192 * 256
+diff --git a/vision_benchmark/evaluation/feature.py b/vision_benchmark/evaluation/feature.py
+index fa9df5b..1ff5e2b 100644
+--- a/vision_benchmark/evaluation/feature.py
++++ b/vision_benchmark/evaluation/feature.py
+@@ -200,7 +200,7 @@ def load_custom_ic_model(config):
+     logging.info(f'=> load model file: {model_file}')
+     ext = model_file.split('.')[-1]
+     if ext == 'pth':
+-        state_dict = torch.load(model_file, map_location="cpu")
++        state_dict = torch.load(model_file)
+     elif ext == 'pkl':
+         logging.info('=> load pkl model')
+         with open(model_file, 'rb') as f:
+@@ -211,6 +211,7 @@ def load_custom_ic_model(config):
+     else:
+         raise ValueError(f'=> Unknown model file, with ext {ext}')
+     model.load_state_dict(state_dict)
++    model.to(device)
+     return model
+ 
+ 
+diff --git a/vision_benchmark/evaluation/full_model_finetune.py b/vision_benchmark/evaluation/full_model_finetune.py
+index de6745b..bed301d 100644
+--- a/vision_benchmark/evaluation/full_model_finetune.py
++++ b/vision_benchmark/evaluation/full_model_finetune.py
+@@ -91,7 +91,7 @@ class Classifier(torch.nn.Module):
+                     if config.MODEL.NAME.startswith(f'{model_keyword}_'):
+                         param.requires_grad = False
+ 
+-                if name.startswith('visual.conv1') or name.startswith('visual.ln_pre') or name.startswith('visual.transformer') or name.startswith('visual'):
++                if name.startswith('visual') or name.startswith('vision'):
+                     param.requires_grad = False
+ 
+         input_dim, output_dim = config.MODEL.SPEC.EMBED_DIM, config.DATASET.NUM_CLASSES
+@@ -260,7 +260,12 @@ def train_task(train_dataloader, test_dataloader, config, sweep_run=False):
+     model_info['n_backbone_params'] = sum(p.numel() for p in model.backbone.parameters())
+     model_info['n_params'] = sum(p.numel() for p in model.parameters())
+ 
+-    for epoch in range(config.TRAIN.BEGIN_EPOCH, config.TRAIN.END_EPOCH):
++    begin_epoch = config.TRAIN.BEGIN_EPOCH
++    end_epoch = config.TRAIN.END_EPOCH
++    if sweep_run is True:
++        begin_epoch = config.TRAIN.SWEEP_BEGIN_EPOCH
++        end_epoch = config.TRAIN.SWEEP_END_EPOCH
++    for epoch in range(begin_epoch, end_epoch):
+         adjust_learning_rate(optimizer, epoch, config)
+ 
+         # train for one epoch
+@@ -422,7 +427,7 @@ def accuracy(output, target, topk=(1,)):
+ def hyperparameter_sweep_lr(train_dataloader, val_dataloader, config):
+     logging.info("=> Start hyperparameter tuning.")
+     start = time.time()
+-    learning_rate_list = np.logspace(-6, -1, num=6).tolist()
++    learning_rate_list = np.logspace(-6, -2, num=5).tolist()
+     best_score = 0
+     best_lr = 0
+     best_l2_lambda = 0
+diff --git a/vision_benchmark/models/__init__.py b/vision_benchmark/models/__init__.py
+index 2f0a896..1445929 100644
+--- a/vision_benchmark/models/__init__.py
++++ b/vision_benchmark/models/__init__.py
+@@ -1,10 +1,12 @@
+-from . import cls_example
+-from . import clip_example
+-from . import clip_react
+-from . import cls_swin
+-from . import clip_swin
+-from . import mae
+-from . import mocov3
+-from . import declip
++# from . import cls_example
++# from . import clip_example
++# from . import clip_react
++# from . import cls_swin
++# from . import clip_swin
++# from . import mae
++# from . import mocov3
++# from . import declip
++from . import cls_custom_clip
+ 
+-__all__ = ['cls_example', 'clip_example', 'clip_react', 'cls_swin', 'clip_swin', 'mae', 'mocov3', 'declip']
++# __all__ = ['cls_example', 'clip_example', 'clip_react', 'cls_swin', 'clip_swin', 'mae', 'mocov3', 'declip', 'cls_custom_clip']
++__all__ = ['cls_custom_clip']
+\ No newline at end of file
+diff --git a/vision_benchmark/models/cls_custom_clip.py b/vision_benchmark/models/cls_custom_clip.py
+new file mode 100644
+index 0000000..bd23a78
+--- /dev/null
++++ b/vision_benchmark/models/cls_custom_clip.py
+@@ -0,0 +1,27 @@
++# Copyright (c) Meta Platforms, Inc. and affiliates.
++# All rights reserved.
++
++import torch
++import numpy as np
++
++from transformers import CLIPProcessor, CLIPModel, CLIPConfig
++
++
++class HFClipElevaterWrap(CLIPModel):
++    def forward_features(self, x):
++        """
++        This method is called to extract features for evaluation.
++        """
++        return self.get_image_features(pixel_values=x)
++
++
++    def encode_text(self, x):
++        attention_mask = torch.tensor([[1 if elem != 0 else 0 for elem in row] for row in x]).to(x.device)
++        return self.get_text_features(input_ids=x, attention_mask=attention_mask)
++
++def get_cls_model(config, **kwargs):
++    """
++    Specify your model here
++    """
++    model = HFClipElevaterWrap(CLIPConfig()).to('cuda')
++    return model
+diff --git a/vision_benchmark/resources/model/custom_clip.yaml b/vision_benchmark/resources/model/custom_clip.yaml
+new file mode 100644
+index 0000000..1e77ec1
+--- /dev/null
++++ b/vision_benchmark/resources/model/custom_clip.yaml
+@@ -0,0 +1,31 @@
++INPUT:
++  MEAN:
++  - 0.485
++  - 0.456
++  - 0.406
++  STD:
++  - 0.229
++  - 0.224
++  - 0.225
++MODEL:
++  NAME: 'cls_custom_clip'
++  NUM_PARAMS_IN_M: 151.2
++  AUTHOR: 'OpenAI'
++  PRETRAINED_DATA: 'CLIP-data+long-caps'
++  CREATION_TIME: '2021-01-05'
++  # Following configuration is needed for runing linear probe with Pytorch based linear model.
++  SPEC:
++    EMBED_DIM: 512
++    VISION:
++      MODEL: vit
++      PATCH_SIZE: 32
++      WIDTH: 384
++      LAYERS: 12
++    TEXT:
++      TOKENIZER: clip
++      STYLE: clip
++      CONTEXT_LENGTH: 77
++      VOCAB_SIZE: 49408
++      WIDTH: 512
++      HEADS: 8
++      LAYERS: 12
+\ No newline at end of file
+diff --git a/vision_benchmark/utils/utils.py b/vision_benchmark/utils/utils.py
+index b3f844c..77050f0 100644
+--- a/vision_benchmark/utils/utils.py
++++ b/vision_benchmark/utils/utils.py
+@@ -25,7 +25,8 @@ def setup_logger(final_output_dir, rank, phase):
+     console.setFormatter(
+         logging.Formatter(head)
+     )
+-    logging.getLogger('').addHandler(console)
++    if len(logging.getLogger('').handlers) <= 1:
++        logging.getLogger('').addHandler(console)
+ 
+ 
+ def create_logger(cfg, phase='train'):

@@ -1,0 +1,16 @@
+datasets==2.14.1
+easydict==1.10
+hydra-core==1.3.2
+matplotlib==3.7.1
+matplotlib-inline==0.1.6
+omegaconf==2.3.0
+pandas==2.0.3
+scikit-image==0.19.3
+scikit-learn==1.3.0
+scipy==1.10.0
+submitit==1.4.5
+tensorboard==2.14.0
+tensorboard-data-server==0.7.1
+tensorboardX==2.6.2.2
+wget==3.2
+yacs==0.1.8

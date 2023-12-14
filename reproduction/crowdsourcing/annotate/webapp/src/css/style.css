@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ * This source code is licensed under the CC-BY-NC license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+ .shimmer {
+    color: grey;
+    display:inline-block;
+    mask: linear-gradient(85deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0) 45%, rgba(255,255,255,0) 100%) right/300% 100%;
+    -webkit-mask:linear-gradient(85deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0) 45%, rgba(255,255,255,0) 100%) right/300% 100%;
+    background-repeat: no-repeat;
+    animation: shimmer 6s infinite;
+    font-size: 50px;
+    mask-position: 100% 0;
+    -webkit-mask-position: 100% 0;
+  }
+  
+  @keyframes shimmer {
+    50% {
+      mask-position: -200% 0;
+      -webkit-mask-position: -200% 0;
+    }
+    100% {
+      mask-position: -200% 0;
+      -webkit-mask-position: -200% 0;
+    }
+  }
