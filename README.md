@@ -1,6 +1,7 @@
 # Densely Captioned Images
 
-This repo contains the code required to use the Densely Captioned Images dataset, as well as the complete reproduction for the **Insert Title And Link** Paper.
+This repo contains the code required to use the Densely Captioned Images dataset, as well as the complete reproduction for the [A Picture is Worth More Than 77 Text Tokens: Evaluating CLIP-Style Models on Dense Captions
+](https://arxiv.org/abs/2312.08578) Paper.
 
 For use of the dataset, which includes both for training and evaluation, see the **Dataset** section. For reproduction, which includes data collection, evaluation against other benchmarks, model code, and more, see the **Reproduction** section.
 
@@ -8,9 +9,13 @@ For use of the dataset, which includes both for training and evaluation, see the
 
 If you use this dataset in your work, please credit the initial work here:
 ```bibtex
-@misc{
-    author = "us",
-    title = "TODO put the real paper in",
+@misc{urbanek2023picture,
+      title={A Picture is Worth More Than 77 Text Tokens: Evaluating CLIP-Style Models on Dense Captions}, 
+      author={Jack Urbanek and Florian Bordes and Pietro Astolfi and Mary Williamson and Vasu Sharma and Adriana Romero-Soriano},
+      year={2023},
+      eprint={2312.08578},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
 }
 ```
 
