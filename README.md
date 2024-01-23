@@ -52,6 +52,8 @@ python dataset/densely_captioned_images/dataset/scripts/download.py
 Or download them manually at the following urls.
 https://github.com/facebookresearch/DCI/blob/3d95af66c918f0cc24f115c5eeb0d2f66be30872/dataset/densely_captioned_images/dataset/scripts/download.py#L16-L29
 
+Once you extracted the dci.tar.gz dataset which contain the annotations, you should download the images after accepting the license agreement from the [SA-1B dataset page](https://ai.meta.com/datasets/segment-anything-downloads/). You do not need to download the entire SA-1B dataset, **you only need to download the archive sa_000138.tar and extract the images in the photos folder**.
+
 ### Data
 
 #### CLIP-ready
