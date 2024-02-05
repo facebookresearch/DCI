@@ -23,7 +23,7 @@ If you use this dataset in your work, please credit the initial work here:
 
 ### Details
 
-The Densely Captioned Images dataset, or DCI, consists of 8021 images from [SA-1B](https://ai.meta.com/datasets/segment-anything/), each with a complete description aiming to capture the full visual detail of what is present in the image. Much of the description is directly aligned to submasks of the image.
+The Densely Captioned Images dataset, or DCI, consists of 7805 images from [SA-1B](https://ai.meta.com/datasets/segment-anything/), each with a complete description aiming to capture the full visual detail of what is present in the image. Much of the description is directly aligned to submasks of the image.
 
 ![Water Pump example from Densely Captioned Images](./docs/images/Example1New.png)
 
