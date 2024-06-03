@@ -16,7 +16,7 @@ import hashlib
 RESOURCES = {
     'densely_captioned_images': {
         'url': 'https://dl.fbaipublicfiles.com/densely_captioned_images/dci.tar.gz',
-        'check': '9caff10cb6324c801d9020638f49925f04de87d897ca8614c599f3c43bef3aeb'
+        'check': 'd865c244150168d3f25daaad0bf5b70b2123cf3e83ca7b0e207d5b26943c5fc7'
     },
     'dci_pick1': {
         'url': 'https://dl.fbaipublicfiles.com/densely_captioned_images/dci_pick1.tar.gz',
