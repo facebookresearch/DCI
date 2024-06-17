@@ -9,13 +9,13 @@ For use of the dataset, which includes both for training and evaluation, see the
 
 If you use this dataset in your work, please credit the initial work here:
 ```bibtex
-@misc{urbanek2023picture,
-      title={A Picture is Worth More Than 77 Text Tokens: Evaluating CLIP-Style Models on Dense Captions}, 
-      author={Jack Urbanek and Florian Bordes and Pietro Astolfi and Mary Williamson and Vasu Sharma and Adriana Romero-Soriano},
-      year={2023},
-      eprint={2312.08578},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@InProceedings{Urbanek_2024_CVPR,
+    author    = {Urbanek, Jack and Bordes, Florian and Astolfi, Pietro and Williamson, Mary and Sharma, Vasu and Romero-Soriano, Adriana},
+    title     = {A Picture is Worth More Than 77 Text Tokens: Evaluating CLIP-Style Models on Dense Captions},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2024},
+    pages     = {26700-26709}
 }
 ```
 
