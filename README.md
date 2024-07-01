@@ -31,7 +31,7 @@ An example is shown above. In the top left we see the full image of a water pump
 
 ### Setup
 
-We suggest setting up in an conda environment.
+We suggest setting up in a conda environment.
 
 ```bash
 conda create -n densecaps python=3.10
